@@ -1,0 +1,19 @@
+{
+  "name": "tree-sitter-luau",
+  "version": "0.1.0",
+  "description": "Tree Sitter grammar for Roblox's open source Lua variant, Luau.",
+  "main": "grammar.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryan-c-scott/tree-sitter-luau.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ryan-c-scott/tree-sitter-luau/issues"
+  },
+  "homepage": "https://github.com/ryan-c-scott/tree-sitter-luau#readme"
+}
