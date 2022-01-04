@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/ryan-c-scott/tree-sitter-luau/issues"
   },
-  "homepage": "https://github.com/ryan-c-scott/tree-sitter-luau#readme"
+  "homepage": "https://github.com/ryan-c-scott/tree-sitter-luau#readme",
+  "dependencies": {
+    "tree-sitter-cli": "^0.20.1"
+  }
 }
