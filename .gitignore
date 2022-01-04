@@ -102,3 +102,15 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Tree Sitter
+Cargo.toml
+parser.exp
+parser.lib
+parser.obj
+scanner.obj
+src/grammar.json
+src/node-types.json
+src/parser.c
+src/tree_sitter
+bindings/
