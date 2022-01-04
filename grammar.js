@@ -12,7 +12,6 @@ module.exports = grammar({
     // NOTE: Unspecified in spec
     NAME: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
     NUMBER: $ => /\d+/,
-    TypeAnnotation: $ => /[a-z_]+/,
     STRING: $ => choice(/"(\\.|[^\"])*"/, /'(\\.|[^\'])*'/),
     comment: ($) => seq("--", /.*\r?\n/),
 
@@ -34,12 +33,12 @@ module.exports = grammar({
       field('export', seq(optional('export'), 'type', $.NAME, optional(seq('<', $.GenericTypeList, '>')), '=', $.Type))
     )),
 
-    funcname: $ => seq($.NAME, repeat(seq('.', $.NAME)), optional(seq(':', $.NAME))),
+    funcname: $ => seq($.NAME, repeat(seq('.', $.NAME)), optional(seq(':', $.Type))),
     funcbody: $ => seq('(', optional($.parlist), ')', optional(seq(':', $.ReturnType)), optional($.block), 'end'),
     parlist: $ => choice(seq($.bindinglist, optional(seq(',', '...'))), '...'),
     explist: $ => seq(repeat(seq($.exp, ',')), $.exp),
     namelist: $ => seq($.NAME, repeat(seq(',', $.NAME))),
-    binding: $ => seq($.NAME, optional(seq(':', $.TypeAnnotation))),
+    binding: $ => seq($.NAME, optional(seq(':', $.Type))),
     bindinglist: $ => prec.right(seq($.binding, optional(seq(',', $.bindinglist)))),
     var: $ => choice($.NAME, seq($.prefixexp, '[', $.exp, ']'), seq($.prefixexp, '.', $.NAME)),
     varlist: $ => seq($.var, repeat(seq(',', $.var))),
