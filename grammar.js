@@ -1,6 +1,11 @@
 module.exports = grammar({
   name: 'luau',
 
+  externals: $ => [
+    $.comment,
+    $.STRING,
+  ],
+
   extras: $ => [/[\n]/, /\s/, $.comment],
 
   rules: {
@@ -11,8 +16,6 @@ module.exports = grammar({
 
     // NOTE: Unspecified in spec
     NAME: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
-    STRING: $ => choice(/"(\\.|[^\"])*"/, /'(\\.|[^\'])*'/),
-    comment: ($) => seq("--", /.*\r?\n/),
     NUMBER: $ => {
       const decimal_digits = /[0-9]+/
       const signed_integer = seq(optional(choice('-', '+')), decimal_digits)
