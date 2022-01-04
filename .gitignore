@@ -105,10 +105,11 @@ dist
 
 # Tree Sitter
 Cargo.toml
-parser.exp
-parser.lib
-parser.obj
-scanner.obj
+*.exp
+*.lib
+*.dll
+*.obj
+*.pdb
 src/grammar.json
 src/node-types.json
 src/parser.c
