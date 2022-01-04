@@ -7,7 +7,7 @@ module.exports = grammar({
     source_file: $ => repeat($.block),
 
     // NOTE: Changed to choice to make only single laststat identify as such and not as a function call
-    block: $ => prec.right(seq(repeat1(seq(choice($._stat, $.laststat), optional(';'))))),
+    block: $ => prec.right(seq(repeat1(seq(choice($.stat, $.laststat), optional(';'))))),
 
     // NOTE: Unspecified in spec
     NAME: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
@@ -47,7 +47,7 @@ module.exports = grammar({
 
     //
     laststat: $ => prec.right(choice(seq('return', optional($.explist)), 'break', 'continue')),
-    _stat: $ => prec.left(choice(
+    stat: $ => prec.left(choice(
       field('binding', seq($.varlist, '=', $.explist)),
       field('op', seq($.var, $.compoundop, $.exp)),
       $.functioncall,
