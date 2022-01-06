@@ -76,7 +76,7 @@ module.exports = grammar({
     var: $ => choice($.NAME, seq($.prefixexp, '[', $.exp, ']'), seq($.prefixexp, '.', $.NAME)),
     varlist: $ => seq($.var, repeat(seq(',', $.var))),
     prefixexp: $ => choice($.var, prec(3, $.functioncall), seq('(', $.exp, ')')),
-    functioncall: $ => choice(seq($.prefixexp, $.funcargs), seq($.prefixexp, ':', $.NAME, $.funcargs)),
+    functioncall: $ => choice(seq($.prefixexp, $.funcargs), field('method', seq($.prefixexp, ':', $.NAME, $.funcargs))),
 
     exp: $ => prec.right(seq(choice($._asexp, seq($.unop, $.exp)), repeat(seq($.binop, $.exp)))),
     ifelseexp: $ => seq('if', $.exp, 'then', $.exp, repeat(seq('elseif', $.exp, 'then', $.exp)), 'else', $.exp),
