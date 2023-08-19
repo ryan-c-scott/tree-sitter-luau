@@ -9,10 +9,8 @@ module.exports = grammar({
   extras: $ => [/[\n]/, /\s/, $.comment],
 
   rules: {
-    source_file: $ => repeat($.block),
-
-    // NOTE: Changed to choice to make only single laststat identify as such and not as a function call
-    block: $ => prec.right(seq(repeat1(seq(choice($.stat, $.laststat), optional(';'))))),
+    source_file: $ => prec.right(seq(repeat1(seq(choice($._stat, $._laststat), optional(';'))))),
+    _block: $ => prec.right(seq(repeat1(seq(choice($._stat, $._laststat), optional(';'))))),
 
     // NOTE: Unspecified in spec
     NAME: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
@@ -49,43 +47,62 @@ module.exports = grammar({
     },
 
     //
-    laststat: $ => prec.right(choice(seq('return', optional($.explist)), 'break', 'continue')),
-    stat: $ => prec.left(choice(
-      field('binding', seq($.varlist, '=', $.explist)),
-      field('op', seq($.var, $.compoundop, $.exp)),
+    _laststat: $ => prec.right(choice(seq('return', optional($._explist)), 'break', 'continue')),
+    _stat: $ => prec.left(choice(
+      field('binding', seq($._varlist, '=', $._explist)),
+      $.op,
       $.functioncall,
-      field('do_block', seq('do', optional($.block), 'end')),
-      field('loop_while', seq('while', $.exp, 'do', optional($.block), 'end')),
-      field('loop_repeat', seq('repeat', optional($.block), 'until', $.exp)),
-      field('if', seq('if', $.exp, 'then', optional($.block), repeat(seq('elseif', $.exp, 'then', optional($.block))), optional(seq('else', optional($.block))), 'end')),
-      field('loop_for_range', seq('for', $.binding, '=', $.exp, ',', $.exp, optional(seq(',', $.exp)), 'do', optional($.block), 'end')),
-      field('loop_for', seq('for', $.bindinglist, 'in', $.explist, 'do', optional($.block), 'end')),
-      field('function', seq('function', $.funcname, $.funcbody)),
-      field('function_local', seq('local', 'function', $.NAME, $.funcbody)),
-      field('binding_local', seq('local', $.bindinglist, optional(seq('=', $.explist)))),
-      field('export', seq(optional('export'), 'type', $.NAME, optional(seq('<', $.GenericTypeList, '>')), '=', $.Type))
+      $.do_block,
+      $.loop_while,
+      $.loop_repeat,
+      $.if,
+      $.loop_for_range,
+      $.loop_for,
+      $.function,
+      $.function_local,
+      $._binding_local,
+      $.type_definition,
+      $.comment,
     )),
 
-    funcname: $ => seq($.NAME, repeat(seq('.', $.NAME)), optional(seq(':', $.Type))),
-    funcbody: $ => seq('(', optional($.parlist), ')', optional(seq(':', $.ReturnType)), optional($.block), 'end'),
-    parlist: $ => choice(seq($.bindinglist, optional(seq(',', '...'))), '...'),
-    explist: $ => seq(repeat(seq($.exp, ',')), $.exp),
-    namelist: $ => seq($.NAME, repeat(seq(',', $.NAME))),
-    binding: $ => seq($.NAME, optional(seq(':', $.Type))),
-    bindinglist: $ => prec.right(seq($.binding, optional(seq(',', $.bindinglist)))),
-    var: $ => choice($.NAME, seq($.prefixexp, '[', $.exp, ']'), seq($.prefixexp, '.', $.NAME)),
-    varlist: $ => seq($.var, repeat(seq(',', $.var))),
-    prefixexp: $ => choice($.var, prec(3, $.functioncall), seq('(', $.exp, ')')),
-    functioncall: $ => choice(seq($.prefixexp, $.funcargs), field('method', seq($.prefixexp, ':', $.NAME, $.funcargs))),
+    op: $ => seq($.var, $.compoundop, $._exp),
 
-    exp: $ => prec.right(seq(choice($._asexp, seq($.unop, $.exp)), repeat(seq($.binop, $.exp)))),
-    ifelseexp: $ => seq('if', $.exp, 'then', $.exp, repeat(seq('elseif', $.exp, 'then', $.exp)), 'else', $.exp),
+    do_block: $ => seq('do', optional($._block), 'end'),
+    loop_while: $ => seq('while', $._exp, 'do', optional($._block), 'end'),
+    loop_repeat: $ => seq('repeat', optional($._block), 'until', $._exp),
+    if: $ => seq('if', $._exp, 'then', optional($._block), repeat(seq('elseif', $._exp, 'then', optional($._block))), optional(seq('else', optional($._block))), 'end'),
+    loop_for_range: $ => seq('for', $.binding, '=', $._exp, ',', $._exp, optional(seq(',', $._exp)), 'do', optional($._block), 'end'),
+    loop_for: $ => seq('for', $._bindinglist, 'in', $._explist, 'do', optional($._block), 'end'),
+    function: $ => seq('function', $.funcname, $.funcbody),
+    function_local: $ => seq('local', 'function', $.NAME, $.funcbody),
+    _binding_local: $ => seq('local', $._bindinglist, optional(seq('=', $._explist))),
+
+
+    type_definition: $ => seq(optional('export'), 'type', field('type_name', $.NAME), optional(seq('<', $.GenericTypeList, '>')), '=', $.Type),
+
+    require: $ => seq("require", "(", field('module', $._exp), ")"),
+    funcname: $ => seq($.NAME, repeat(seq('.', $.NAME)), optional(seq(':', $.Type))),
+    funcbody: $ => seq('(', optional($._parlist), ')', optional(seq(':', $.ReturnType)), optional($._block), 'end'),
+    _parlist: $ => choice(seq($._bindinglist, optional(seq(',', '...'))), '...'),
+    _explist: $ => seq(repeat(seq($._exp, ',')), $._exp),
+    binding: $ => seq($.NAME, optional(seq(':', $.Type))),
+    _bindinglist: $ => prec.right(seq($.binding, optional(seq(',', $._bindinglist)))),
+    var: $ => choice($.NAME, seq($._prefixexp, '[', $._exp, ']'), seq($._prefixexp, '.', $.NAME)),
+    _varlist: $ => seq($.var, repeat(seq(',', $.var))),
+    _prefixexp: $ => choice($.var, prec(3, $.functioncall), seq('(', $._exp, ')')),
+    functioncall: $ => choice(seq($._prefixexp, $.funcargs), field('method', seq($._prefixexp, ':', $.NAME, $.funcargs))),
+
+    _exp: $ => prec.left(choice($.require,
+                               seq(choice($._asexp, seq($.unop, $._exp)),
+                                   optional(repeat1(seq($.binop, $._exp)))))),
+
+    ifelseexp: $ => seq('if', $._exp, 'then', $._exp, repeat(seq('elseif', $._exp, 'then', $._exp)), 'else', $._exp),
     _asexp: $ => prec.right(seq($._simpleexp, optional(seq('::', $.Type)))),
-    _simpleexp: $ => prec.right(choice($.NUMBER, $.STRING, 'nil', 'true', 'false', '...', $.tableconstructor, seq('function', $.funcbody), $.prefixexp, $.ifelseexp)),
-    funcargs: $ => choice(seq('(', optional($.explist), ')'), $.tableconstructor, $.STRING),
+    _simpleexp: $ => prec.right(choice($.NUMBER, $.STRING, 'nil', 'true', 'false', '...', $.tableconstructor, seq('function', $.funcbody), $._prefixexp, $.ifelseexp)),
+    funcargs: $ => choice(seq('(', optional($._explist), ')'), $.tableconstructor, $.STRING),
     tableconstructor: $ => seq('{', optional($.fieldlist), '}'),
     fieldlist: $ => seq($.field, repeat(seq($.fieldsep, $.field)), optional($.fieldsep)),
-    field: $ => choice(seq('[', $.exp, ']', '=', $.exp), seq($.NAME, '=', $.exp), $.exp),
+    field: $ => choice(seq('[', $._exp, ']', '=', $._exp), seq($.NAME, '=', $._exp), $._exp),
     fieldsep: $ => choice(',', ';'),
     compoundop: $ => choice('+=', '-=', '*=', '/=', '%=', '^=', '..='),
     binop: $ => choice('+', '-', '*', '/', '^', '%', '..', '<', '<=', '>', '>=', '==', '~=', 'and', 'or'),
@@ -94,7 +111,7 @@ module.exports = grammar({
     SimpleType: $ => prec.right(choice(
       'nil',
       seq($.NAME, optional(seq('.', $.NAME)), optional(seq('<', $.TypeList, '>'))),
-      seq('typeof', '(', $.exp, ')'),
+      seq('typeof', '(', $._exp, ')'),
       $.TableType,
       $.FunctionType)),
 
