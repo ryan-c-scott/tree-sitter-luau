@@ -58,7 +58,7 @@ module.exports = grammar({
       $.if,
       $.loop_for_range,
       $.loop_for,
-      $.function,
+      $.function_definition,
       $.function_local,
       $._binding_local,
       $.type_definition,
@@ -73,7 +73,7 @@ module.exports = grammar({
     if: $ => seq('if', $._exp, 'then', optional($._block), repeat(seq('elseif', $._exp, 'then', optional($._block))), optional(seq('else', optional($._block))), 'end'),
     loop_for_range: $ => seq('for', $.binding, '=', $._exp, ',', $._exp, optional(seq(',', $._exp)), 'do', optional($._block), 'end'),
     loop_for: $ => seq('for', $._bindinglist, 'in', $._explist, 'do', optional($._block), 'end'),
-    function: $ => seq('function', $.funcname, $.funcbody),
+    function_definition: $ => seq('function', $.funcname, $.funcbody),
     function_local: $ => seq('local', 'function', $.NAME, $.funcbody),
     _binding_local: $ => seq('local', $._bindinglist, optional(seq('=', $._explist))),
 
