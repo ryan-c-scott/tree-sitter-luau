@@ -113,7 +113,9 @@ module.exports = grammar({
       seq($.NAME, optional(seq('.', $.NAME)), optional(seq('<', $.TypeList, '>'))),
       seq('typeof', '(', $._exp, ')'),
       $.TableType,
-      $.FunctionType)),
+      $.FunctionType,
+      seq("(", $.FunctionType, ")"),
+    )),
 
     Type: $ => prec.right(choice(
       seq($.SimpleType, optional('?')),
@@ -123,7 +125,7 @@ module.exports = grammar({
     GenericTypeList: $ => seq($.NAME, optional('...'), repeat(seq(',', $.NAME, optional('...')))),
     TypeList: $ => choice(seq($.Type, optional(seq(',', $.TypeList))), seq('...', $.Type)),
     ReturnType: $ => choice($.Type, seq('(', optional($.TypeList), ')')),
-    TableIndexer: $ => seq('[', $.Type, ']', ':', $.Type),
+    TableIndexer: $ => seq(optional(seq('[', $.Type, ']', ':')), $.Type),
     TableProp: $ => seq($.NAME, ':', $.Type),
     TablePropOrIndexer: $ => choice($.TableProp, $.TableIndexer),
     PropList: $ => seq($.TablePropOrIndexer, repeat(seq($.fieldsep, $.TablePropOrIndexer)), optional($.fieldsep)),
