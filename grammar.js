@@ -49,7 +49,7 @@ module.exports = grammar({
     //
     _laststat: $ => prec.right(choice(seq('return', optional($._explist)), 'break', 'continue')),
     _stat: $ => prec.left(choice(
-      field('binding', seq($._varlist, '=', $._explist)),
+      $.assignment,
       $.op,
       $.functioncall,
       $.do_block,
@@ -60,10 +60,12 @@ module.exports = grammar({
       $.loop_for,
       $.function_definition,
       $.function_local,
-      $._binding_local,
       $.type_definition,
       $.comment,
     )),
+
+    assignment: $ => choice(field('binding', $._binding_local),
+                            field('binding', seq($._varlist, '=', $._explist))),
 
     op: $ => seq($.var, $.compoundop, $._exp),
 
