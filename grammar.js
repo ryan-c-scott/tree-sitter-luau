@@ -117,6 +117,7 @@ module.exports = grammar({
       $.TableType,
       $.FunctionType,
       seq("(", $.FunctionType, ")"),
+      $.STRING,
     )),
 
     Type: $ => prec.right(choice(
